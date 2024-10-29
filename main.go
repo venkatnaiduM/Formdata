@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -49,7 +48,6 @@ func main() {
 	r.GET("/", serveForm)
 	r.POST("/submit", submitHandler)
 
-	fmt.Println("Server is running on :8080")
 	r.Run(":8080")
 }
 
