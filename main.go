@@ -71,8 +71,7 @@ func submitHandler(c *gin.Context) {
 	collection := client.Database("venkat_naidu").Collection("categories")
 	_, err := collection.InsertOne(context.Background(), formData)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Failed to insert data")
-		return
+		panic(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Data submitted successfully", "data": formData})
