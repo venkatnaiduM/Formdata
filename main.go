@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -19,6 +20,10 @@ type FormData struct {
 	Email       string `json:"email"`
 	Salary      int    `json:"salary"`
 	Designation string `json:"designation"`
+}
+
+type Delete_Data struct {
+	Id string `json:_id`
 }
 
 var client *mongo.Client
@@ -47,7 +52,8 @@ func main() {
 	r.LoadHTMLFiles("form.html")
 	r.GET("/", serveForm)
 	r.POST("/submit", submitHandler)
-
+	r.DELETE("/delete", DeleteData)
+	r.PUT("/update", UpdateDetails)
 	r.Run(":8080")
 }
 
@@ -74,6 +80,60 @@ func submitHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Data submitted successfully", "data": formData})
 
+}
+
+func DeleteData(c *gin.Context) {
+	id := c.PostForm("_id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		return
+	}
+	filter := bson.M{"_id": id}
+
+	collection := client.Database("venkat_naidu").Collection("categories")
+
+	result, err := collection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete data"})
+		return
+	}
+
+	if result.DeletedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No document found with the given ID"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Data deleted successfully", "id": id})
+}
+
+func UpdateDetails(c *gin.Context) {
+	id := c.PostForm("_id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		return
+	}
+	formData := FormData{
+		FirstName:   c.PostForm("first_name"),
+		MiddleName:  c.PostForm("middle_name"),
+		Age:         parseAge(c.PostForm("age")),
+		Location:    c.PostForm("location"),
+		Email:       c.PostForm("email"),
+		Salary:      parseSalary(c.PostForm("salary")),
+		Designation: c.PostForm("designation"),
+	}
+
+	filter := bson.M{"_id": id}
+
+	update := bson.M{"$set": formData}
+
+	collection := client.Database("venkat_naidu").Collection("categories")
+	_, err := collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update data"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Data updated successfully", "data": formData})
 }
 
 func parseAge(ageStr string) int {

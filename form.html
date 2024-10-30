@@ -67,6 +67,45 @@
         <input type="submit" value="Submit">
     </form>
 </div>
+<div class="container">
+    <h2>Delete Form</h2>
+    <form action="/delete" method="post">
+        <label for="id">ID:</label>
+        <input type="text" id="id" name="_id" >
+        <input type="submit" value="DELETE">
+    </form>
+</div>
 
+<div class="container">
+    <h2>Updation Form</h2>
+    <form action="/update" method="post">
+
+        <label for="is">ID:</label>
+        <input type="text" id="id" name="_id" >
+
+        <label for="first-name">First Name:</label>
+        <input type="text" id="first-name" name="first_name" >
+
+        <label for="middle-name">Last Name:</label>
+        <input type="text" id="middle-name" name="middle_name">
+
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" >
+
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" >
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" >
+
+        <label for="salary">Salary:</label>
+        <input type="number" id="salary" name="salary" >
+
+        <label for="designation">Designation:</label>
+        <input type="text" id="designation" name="designation" >
+
+        <input type="submit" value="Update">
+    </form>
+</div>
 </body>
 </html>
