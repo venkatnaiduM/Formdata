@@ -54,7 +54,7 @@ func main() {
 	r.GET("/", serveForm)
 	r.POST("/submit", submitHandler)
 	r.POST("/delete", DeleteData)
-	r.PUT("/update", UpdateDetails)
+	r.POST("/update", UpdateDetails)
 	r.Run(":8080")
 }
 
@@ -139,12 +139,25 @@ func UpdateDetails(c *gin.Context) {
 
 	filter := bson.M{"_id": id}
 
-	update := bson.M{"$set": formData}
+	update := bson.M{"$set": bson.M{
+		"first_name":  formData.FirstName,
+		"middle_name": formData.MiddleName,
+		"age":         formData.Age,
+		"location":    formData.Location,
+		"email":       formData.Email,
+		"salary":      formData.Salary,
+		"designation": formData.Designation,
+	}}
 
 	collection := client.Database("venkat_naidu").Collection("categories")
-	_, err = collection.UpdateOne(context.Background(), filter, update)
+	updateResult, err := collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update data"})
+		return
+	}
+
+	if updateResult.MatchedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No document found with the given ID"})
 		return
 	}
 
