@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,7 +24,7 @@ type FormData struct {
 }
 
 type Delete_Data struct {
-	Id string `json:_id`
+	Id string `json:"_id"` // Correct JSON tag
 }
 
 var client *mongo.Client
@@ -52,7 +53,7 @@ func main() {
 	r.LoadHTMLFiles("form.html")
 	r.GET("/", serveForm)
 	r.POST("/submit", submitHandler)
-	r.DELETE("/delete", DeleteData)
+	r.POST("/delete", DeleteData) // Changed to POST
 	r.PUT("/update", UpdateDetails)
 	r.Run(":8080")
 }
@@ -83,11 +84,19 @@ func submitHandler(c *gin.Context) {
 }
 
 func DeleteData(c *gin.Context) {
-	id := c.PostForm("_id")
-	if id == "" {
+	idStr := c.PostForm("_id")
+	if idStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
 		return
 	}
+
+	// Convert the ID from string to ObjectID
+	id, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
 	filter := bson.M{"_id": id}
 
 	collection := client.Database("venkat_naidu").Collection("categories")
@@ -103,15 +112,23 @@ func DeleteData(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Data deleted successfully", "id": id})
+	c.JSON(http.StatusOK, gin.H{"message": "Data deleted successfully", "id": idStr})
 }
 
 func UpdateDetails(c *gin.Context) {
-	id := c.PostForm("_id")
-	if id == "" {
+	idStr := c.PostForm("_id")
+	if idStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
 		return
 	}
+
+	// Convert the ID from string to ObjectID
+	id, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
 	formData := FormData{
 		FirstName:   c.PostForm("first_name"),
 		MiddleName:  c.PostForm("middle_name"),
@@ -127,7 +144,7 @@ func UpdateDetails(c *gin.Context) {
 	update := bson.M{"$set": formData}
 
 	collection := client.Database("venkat_naidu").Collection("categories")
-	_, err := collection.UpdateOne(context.Background(), filter, update)
+	_, err = collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update data"})
 		return
