@@ -24,7 +24,7 @@ type FormData struct {
 }
 
 type Delete_Data struct {
-	Id string `json:"_id"` // Correct JSON tag
+	Id string `json:"_id"`
 }
 
 var client *mongo.Client
@@ -53,7 +53,7 @@ func main() {
 	r.LoadHTMLFiles("form.html")
 	r.GET("/", serveForm)
 	r.POST("/submit", submitHandler)
-	r.POST("/delete", DeleteData) // Changed to POST
+	r.POST("/delete", DeleteData)
 	r.PUT("/update", UpdateDetails)
 	r.Run(":8080")
 }
@@ -90,7 +90,6 @@ func DeleteData(c *gin.Context) {
 		return
 	}
 
-	// Convert the ID from string to ObjectID
 	id, err := primitive.ObjectIDFromHex(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
@@ -122,7 +121,6 @@ func UpdateDetails(c *gin.Context) {
 		return
 	}
 
-	// Convert the ID from string to ObjectID
 	id, err := primitive.ObjectIDFromHex(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
